@@ -322,9 +322,12 @@ dialog.with-character::backdrop {
 /* 示範畫布 */
 .demo-canvas {
   margin-top: 15px;
-  border: 2px solid #4CAF50;
-  border-radius: 8px;
-  overflow: hidden;
+}
+
+.demo-canvas svg {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .dialog-content {
@@ -367,26 +370,27 @@ dialog.with-character::backdrop {
   :root {
     --rect-width: 100%;
     --rect-height: auto;
-    --point-diameter: 52px;
+    --point-diameter: 70px;
   }
 
   .canvas-wrapper {
-    margin-top: 100px;
+    margin-top: 30px;
+    padding: 0 5px;
   }
 
   .fraction-canvas {
-    max-width: 100%;
+    width: 100%;
     height: auto;
-    aspect-ratio: 2 / 1;
   }
 
   h1 {
     font-size: 1.3rem;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 
   .controls {
     gap: 10px;
+    margin-top: 10px;
   }
 
   .btn {
@@ -397,7 +401,7 @@ dialog.with-character::backdrop {
 
 @media (max-width: 400px) {
   :root {
-    --point-diameter: 48px;
+    --point-diameter: 60px;
   }
 
   .btn {

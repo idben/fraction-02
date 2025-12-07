@@ -703,7 +703,6 @@ function handleWrongAnswer(filledRatio) {
 
   wrongBody.innerHTML = `
     <p>${hint}</p>
-    <p>你塗了 ${(filledRatio * 100).toFixed(0)}%，但正確答案是 ${(targetRatio * 100).toFixed(0)}%</p>
     <p>讓我來告訴你正確答案吧！</p>
   `;
 
@@ -715,9 +714,9 @@ function showDemo() {
   const question = gameState.questions[gameState.currentQuestion];
   const demoCanvas = document.querySelector('#demoCanvas');
 
-  // 建立示範用的 SVG
-  const demoWidth = 400;
-  const demoHeight = 200;
+  // 建立示範用的 SVG，比例與實際矩形一致
+  const demoWidth = 800;
+  const demoHeight = calculateRectHeight(question.config);
 
   // 計算正確的切分方式
   const hDivisions = question.config.horizontal + 1; // 橫向分割數
@@ -726,7 +725,7 @@ function showDemo() {
   const cellsToFill = Math.round((question.numerator / question.denominator) * totalCells);
 
   let svgContent = `
-    <svg width="${demoWidth}" height="${demoHeight}" viewBox="0 0 ${demoWidth} ${demoHeight}">
+    <svg viewBox="0 0 ${demoWidth} ${demoHeight}" preserveAspectRatio="xMidYMid meet">
       <rect x="0" y="0" width="${demoWidth}" height="${demoHeight}" fill="white" stroke="#4CAF50" stroke-width="2"/>
   `;
 
