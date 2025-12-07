@@ -370,6 +370,10 @@ dialog.with-character::backdrop {
     --point-diameter: 52px;
   }
 
+  .canvas-wrapper {
+    margin-top: 100px;
+  }
+
   .fraction-canvas {
     max-width: 100%;
     height: auto;
