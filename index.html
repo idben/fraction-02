@@ -11,6 +11,18 @@
     <div id="scoreDisplay" class="score-display">0 分</div>
 
     <div class="container">
+        <!-- 模式切換 -->
+        <div class="mode-switch">
+            <label class="mode-option">
+                <input type="radio" name="mode" value="draw" checked>
+                <span>✏️ 畫線</span>
+            </label>
+            <label class="mode-option">
+                <input type="radio" name="mode" value="fill">
+                <span>🪣 填色</span>
+            </label>
+        </div>
+
         <div class="canvas-wrapper">
             <svg id="fractionCanvas" class="fraction-canvas">
                 <!-- 點位容器（最先畫，在最下層） -->
@@ -31,8 +43,8 @@
         </div>
 
         <div class="controls">
-            <button id="checkAnswerBtn" class="btn btn-primary">確認答案</button>
-            <button id="resetBtn" class="btn btn-danger">重置</button>
+            <button id="checkAnswerBtn" class="btn btn-primary">我要回答!!</button>
+            <button id="resetBtn" class="btn btn-danger">重來一次</button>
         </div>
     </div>
 

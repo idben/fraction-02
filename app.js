@@ -73,6 +73,9 @@ const gameState = {
   targetDenominator: 0     // 目標分母
 };
 
+// 操作模式：'draw' 畫線, 'fill' 填色
+let currentMode = 'draw';
+
 // 根據切分配置計算合適的矩形高度（確保可整除）
 function calculateRectHeight(config) {
   const verticalDivisions = config.vertical + 1;
@@ -172,6 +175,7 @@ const fractionText = document.querySelector('#fractionText');
 const checkAnswerBtn = document.querySelector('#checkAnswerBtn');
 const resetBtn = document.querySelector('#resetBtn');
 const scoreDisplay = document.querySelector('#scoreDisplay');
+const modeRadios = document.querySelectorAll('input[name="mode"]');
 
 // Dialog 元素
 const questionDialog = document.querySelector('#questionDialog');
@@ -199,6 +203,7 @@ const victorySound = document.querySelector('#victorySound');
 function init() {
   generateAllQuestions();
   bindEvents();
+  updateModeClass(); // 設定初始模式 class
   startGame();
 }
 
@@ -309,6 +314,9 @@ function getPointPosition(side, index) {
 
 // 處理點擊點位
 function handlePointClick(event) {
+  // 只有在畫線模式才能點擊點位
+  if (currentMode !== 'draw') return;
+
   const clickedPoint = event.target;
   const side = clickedPoint.dataset.side;
   const index = parseInt(clickedPoint.dataset.index);
@@ -530,6 +538,9 @@ function renderRegions() {
 
 // 處理點擊區域（填色/取消填色）
 function handleRegionClick(event) {
+  // 只有在填色模式才能填色
+  if (currentMode !== 'fill') return;
+
   const rect = event.target;
   const regionId = rect.dataset.regionId;
 
@@ -586,6 +597,13 @@ function reset() {
 
   // 清除點的高亮
   clearPointSelection();
+
+  // 重置模式為畫線
+  currentMode = 'draw';
+  modeRadios.forEach(radio => {
+    radio.checked = radio.value === 'draw';
+  });
+  updateModeClass();
 }
 
 // 綁定事件
@@ -616,6 +634,22 @@ function bindEvents() {
     startGame();
   });
   closeWarningBtn.addEventListener('click', () => warningDialog.close());
+
+  // 模式切換事件
+  modeRadios.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      currentMode = e.target.value;
+      updateModeClass();
+      // 切換模式時清除點位選擇
+      clearPointSelection();
+    });
+  });
+}
+
+// 更新 body 的模式 class
+function updateModeClass() {
+  document.body.classList.remove('mode-draw', 'mode-fill');
+  document.body.classList.add(`mode-${currentMode}`);
 }
 
 // 檢查答案
