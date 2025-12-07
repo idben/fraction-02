@@ -2,14 +2,15 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>分數學習教材</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>分數學習教材</h1>
+    <!-- 計分顯示 -->
+    <div id="scoreDisplay" class="score-display">0 分</div>
 
+    <div class="container">
         <div class="canvas-wrapper">
             <svg id="fractionCanvas" class="fraction-canvas">
                 <!-- 點位容器（最先畫，在最下層） -->
@@ -23,22 +24,75 @@
 
                 <!-- 填色區域容器 -->
                 <g id="fillGroup"></g>
+
+                <!-- 分數文字 -->
+                <text id="fractionText" class="fraction-text"></text>
             </svg>
         </div>
 
         <div class="controls">
-            <button id="showResultBtn" class="btn btn-primary">顯示結果</button>
+            <button id="checkAnswerBtn" class="btn btn-primary">確認答案</button>
             <button id="resetBtn" class="btn btn-danger">重置</button>
         </div>
     </div>
 
-    <!-- 結果對話框 -->
-    <dialog id="resultDialog" class="result-dialog">
+    <!-- 題目對話框 -->
+    <dialog id="questionDialog" class="result-dialog">
         <div class="dialog-content">
-            <h2>計算結果</h2>
-            <div id="dialogBody" class="dialog-body"></div>
+            <h2>🎯 題目</h2>
+            <div id="questionBody" class="dialog-body question-body"></div>
             <div class="dialog-actions">
-                <button id="closeDialogBtn" class="btn btn-primary">關閉</button>
+                <button id="startQuestionBtn" class="btn btn-primary">開始作答！</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- 答對對話框 -->
+    <dialog id="correctDialog" class="result-dialog with-character">
+        <img src="images/happy.png" alt="開心" class="character-image" id="correctCharacter">
+        <div class="dialog-content">
+            <h2>🎉 答對了！</h2>
+            <div id="correctBody" class="dialog-body"></div>
+            <div class="dialog-actions">
+                <button id="nextQuestionBtn" class="btn btn-primary">下一題</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- 答錯對話框 -->
+    <dialog id="wrongDialog" class="result-dialog with-character">
+        <img src="images/sad.png" alt="加油" class="character-image" id="wrongCharacter">
+        <div class="dialog-content">
+            <h2>😅 再想想看</h2>
+            <div id="wrongBody" class="dialog-body"></div>
+            <div class="dialog-actions">
+                <button id="showDemoBtn" class="btn btn-warning">看看正確答案</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- 示範對話框 -->
+    <dialog id="demoDialog" class="result-dialog">
+        <div class="dialog-content">
+            <h2>📖 正確答案</h2>
+            <div id="demoBody" class="dialog-body">
+                <p>看看怎麼做才對喔！</p>
+                <div id="demoCanvas" class="demo-canvas"></div>
+            </div>
+            <div class="dialog-actions">
+                <button id="understoodBtn" class="btn btn-primary">我知道了</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- 勝利對話框 -->
+    <dialog id="victoryDialog" class="result-dialog with-character">
+        <img src="images/pass.png" alt="過關" class="character-image" id="victoryCharacter">
+        <div class="dialog-content">
+            <h2>🏆 太棒了！</h2>
+            <div id="victoryBody" class="dialog-body"></div>
+            <div class="dialog-actions">
+                <button id="restartBtn" class="btn btn-primary">再玩一次</button>
             </div>
         </div>
     </dialog>
@@ -53,6 +107,11 @@
             </div>
         </div>
     </dialog>
+
+    <!-- 音效 -->
+    <audio id="correctSound" src="sounds/correct.mp3" preload="auto"></audio>
+    <audio id="wrongSound" src="sounds/wrong.mp3" preload="auto"></audio>
+    <audio id="victorySound" src="sounds/victory.mp3" preload="auto"></audio>
 
     <script src="app.js"></script>
 </body>

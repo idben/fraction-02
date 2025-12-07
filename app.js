@@ -1,8 +1,151 @@
 // 設定常數
 const RECT_WIDTH = 800;
-const RECT_HEIGHT = 400;
-const HORIZONTAL_POINTS = 7; // 上下邊各7個點（切成8等分）
-const VERTICAL_POINTS = 3;   // 左右邊各3個點（切成4等分）
+let RECT_HEIGHT = 400;
+let HORIZONTAL_POINTS = 7; // 上下邊各N個點（切成N+1等分）
+let VERTICAL_POINTS = 3;   // 左右邊各N個點（切成N+1等分）
+
+// 題庫系統：根據分母定義可用的切分方式
+// 格式: { horizontal: 橫向點數, vertical: 縱向點數 }
+const QUESTION_BANK = {
+  2: [
+    { horizontal: 1, vertical: 1 },  // 2x2 = 4格，每2格=1/2
+    { horizontal: 1, vertical: 0 },  // 只橫切，2格
+    { horizontal: 0, vertical: 1 }   // 只縱切，2格
+  ],
+  3: [
+    { horizontal: 2, vertical: 0 },  // 橫切3等分
+    { horizontal: 0, vertical: 2 }   // 縱切3等分
+  ],
+  4: [
+    { horizontal: 3, vertical: 0 },  // 橫切4等分
+    { horizontal: 0, vertical: 3 },  // 縱切4等分
+    { horizontal: 1, vertical: 1 },  // 2x2 = 4格
+    { horizontal: 3, vertical: 1 },  // 4x2 = 8格（但分母是4）
+    { horizontal: 1, vertical: 3 }   // 2x4 = 8格（但分母是4）
+  ],
+  5: [
+    { horizontal: 4, vertical: 0 },  // 橫切5等分
+    { horizontal: 0, vertical: 4 }   // 縱切5等分
+  ],
+  6: [
+    { horizontal: 5, vertical: 0 },  // 橫切6等分
+    { horizontal: 0, vertical: 5 },  // 縱切6等分
+    { horizontal: 2, vertical: 1 },  // 3x2 = 6格
+    { horizontal: 1, vertical: 2 }   // 2x3 = 6格
+  ],
+  7: [
+    { horizontal: 6, vertical: 0 },  // 橫切7等分
+    { horizontal: 0, vertical: 6 }   // 縱切7等分
+  ],
+  8: [
+    { horizontal: 7, vertical: 0 },  // 橫切8等分
+    { horizontal: 0, vertical: 7 },  // 縱切8等分
+    { horizontal: 3, vertical: 1 },  // 4x2 = 8格
+    { horizontal: 1, vertical: 3 },  // 2x4 = 8格
+    { horizontal: 7, vertical: 1 },  // 8x2 = 16格（分母8）
+    { horizontal: 7, vertical: 3 },  // 8x4 = 32格（分母8）
+    { horizontal: 3, vertical: 7 },  // 4x8 = 32格（分母8）
+    { horizontal: 3, vertical: 3 }   // 4x4 = 16格（分母8）
+  ],
+  9: [
+    { horizontal: 8, vertical: 0 },  // 橫切9等分
+    { horizontal: 0, vertical: 8 },  // 縱切9等分
+    { horizontal: 2, vertical: 2 },  // 3x3 = 9格
+    { horizontal: 8, vertical: 2 },  // 9x3 = 27格（分母9）
+    { horizontal: 2, vertical: 8 }   // 3x9 = 27格（分母9）
+  ],
+  10: [
+    { horizontal: 9, vertical: 0 },  // 橫切10等分
+    { horizontal: 0, vertical: 9 },  // 縱切10等分
+    { horizontal: 4, vertical: 1 },  // 5x2 = 10格
+    { horizontal: 1, vertical: 4 }   // 2x5 = 10格
+  ]
+};
+
+// 答題系統狀態
+const gameState = {
+  currentQuestion: 0,      // 當前題目索引 (0-9)
+  score: 0,                // 當前得分
+  totalQuestions: 10,      // 總題數
+  questions: [],           // 生成的題目列表
+  isRetry: false,          // 是否為重試（重試不給分）
+  targetNumerator: 0,      // 目標分子
+  targetDenominator: 0     // 目標分母
+};
+
+// 根據切分配置計算合適的矩形高度（確保可整除）
+function calculateRectHeight(config) {
+  const verticalDivisions = config.vertical + 1;
+
+  // 基礎高度 400，根據縱向分割調整
+  let height = 400;
+
+  // 如果縱向有分割，確保高度可被整除
+  if (verticalDivisions > 1) {
+    // 找一個接近 400 且可被 verticalDivisions 整除的數
+    height = Math.round(400 / verticalDivisions) * verticalDivisions;
+  }
+
+  return height;
+}
+
+// 載入題目到畫布
+function loadQuestion(questionIndex) {
+  const question = gameState.questions[questionIndex];
+  gameState.targetNumerator = question.numerator;
+  gameState.targetDenominator = question.denominator;
+
+  // 更新點位數量
+  HORIZONTAL_POINTS = question.config.horizontal;
+  VERTICAL_POINTS = question.config.vertical;
+
+  // 更新矩形高度
+  RECT_HEIGHT = calculateRectHeight(question.config);
+
+  // 重置狀態
+  state.horizontalLines.clear();
+  state.verticalLines.clear();
+  state.filledAreas.clear();
+  state.selectedPoint = null;
+
+  // 重繪畫布
+  setupCanvas();
+  pointsGroup.innerHTML = '';
+  linesGroup.innerHTML = '';
+  fillGroup.innerHTML = '';
+  createPoints();
+  updateRegions();
+  renderRegions();
+  renderFractionText();
+}
+
+// 生成一道題目
+function generateQuestion() {
+  // 隨機選擇分母 (2-10)
+  const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const denominator = denominators[Math.floor(Math.random() * denominators.length)];
+
+  // 隨機選擇分子 (1 到 分母-1)
+  const numerator = Math.floor(Math.random() * (denominator - 1)) + 1;
+
+  // 從題庫中隨機選擇切分方式
+  const configs = QUESTION_BANK[denominator];
+  const config = configs[Math.floor(Math.random() * configs.length)];
+
+  return {
+    numerator,
+    denominator,
+    config
+  };
+}
+
+// 生成所有題目
+function generateAllQuestions() {
+  gameState.questions = [];
+  for (let i = 0; i < gameState.totalQuestions; i++) {
+    gameState.questions.push(generateQuestion());
+  }
+}
 
 // 動態取得圓點半徑（從 CSS 變數讀取）
 function getPointRadius() {
@@ -25,19 +168,72 @@ const mainRect = document.querySelector('#mainRect');
 const pointsGroup = document.querySelector('#pointsGroup');
 const linesGroup = document.querySelector('#linesGroup');
 const fillGroup = document.querySelector('#fillGroup');
-const showResultBtn = document.querySelector('#showResultBtn');
+const fractionText = document.querySelector('#fractionText');
+const checkAnswerBtn = document.querySelector('#checkAnswerBtn');
 const resetBtn = document.querySelector('#resetBtn');
-const resultDialog = document.querySelector('#resultDialog');
+const scoreDisplay = document.querySelector('#scoreDisplay');
+
+// Dialog 元素
+const questionDialog = document.querySelector('#questionDialog');
+const correctDialog = document.querySelector('#correctDialog');
+const wrongDialog = document.querySelector('#wrongDialog');
+const demoDialog = document.querySelector('#demoDialog');
+const victoryDialog = document.querySelector('#victoryDialog');
 const warningDialog = document.querySelector('#warningDialog');
-const closeDialogBtn = document.querySelector('#closeDialogBtn');
+
+// 按鈕元素
+const startQuestionBtn = document.querySelector('#startQuestionBtn');
+const nextQuestionBtn = document.querySelector('#nextQuestionBtn');
+const showDemoBtn = document.querySelector('#showDemoBtn');
+const understoodBtn = document.querySelector('#understoodBtn');
+const restartBtn = document.querySelector('#restartBtn');
 const closeWarningBtn = document.querySelector('#closeWarningBtn');
+
+// 音效元素
+const correctSound = document.querySelector('#correctSound');
+const wrongSound = document.querySelector('#wrongSound');
+const victorySound = document.querySelector('#victorySound');
+
 
 // 初始化
 function init() {
-  setupCanvas();
-  createPoints();
-  updateRegions();
+  generateAllQuestions();
   bindEvents();
+  startGame();
+}
+
+// 開始遊戲
+function startGame() {
+  gameState.currentQuestion = 0;
+  gameState.score = 0;
+  gameState.isRetry = false;
+  updateScoreDisplay();
+  showQuestionDialog();
+}
+
+// 顯示題目 dialog
+function showQuestionDialog() {
+  const question = gameState.questions[gameState.currentQuestion];
+  const questionBody = document.querySelector('#questionBody');
+  questionBody.innerHTML = `
+    <p>小朋友，請把下面的分數塗上顏色喔！</p>
+    <div class="question-fraction">${question.numerator}/${question.denominator}</div>
+    <p>先畫線把矩形切分，再把正確的區域塗上顏色！</p>
+  `;
+  questionDialog.showModal();
+}
+
+// 更新分數顯示
+function updateScoreDisplay() {
+  scoreDisplay.textContent = `${gameState.score} 分`;
+}
+
+// 在矩形中央顯示分數文字
+function renderFractionText() {
+  const question = gameState.questions[gameState.currentQuestion];
+  fractionText.textContent = `${question.numerator}/${question.denominator}`;
+  fractionText.setAttribute('x', RECT_WIDTH / 2);
+  fractionText.setAttribute('y', RECT_HEIGHT / 2);
 }
 
 // 設置畫布
@@ -363,55 +559,6 @@ function simplifyFraction(numerator, denominator) {
   };
 }
 
-// 顯示結果
-function showResult() {
-  const filledRegionsCount = state.filledAreas.size;
-
-  // 檢查是否有填色
-  if (filledRegionsCount === 0) {
-    showWarning('請先填色後再計算結果！');
-    return;
-  }
-
-  // 計算總面積和填色面積
-  const totalArea = RECT_WIDTH * RECT_HEIGHT;
-  let filledArea = 0;
-
-  // 計算所有填色區域的面積
-  state.regions.forEach(region => {
-    if (state.filledAreas.has(region.id)) {
-      filledArea += region.width * region.height;
-    }
-  });
-
-  // 將面積轉換為分數（以總面積為分母）
-  // 為了得到最簡分數，我們需要找到填色面積和總面積的比例
-  // 使用四捨五入到最接近的整數比例
-  const ratio = filledArea / totalArea;
-
-  // 將比例轉換為分數
-  // 找一個合適的分母來表示這個比例
-  let numerator = Math.round(filledArea);
-  let denominator = Math.round(totalArea);
-
-  // 化簡分數
-  const simplified = simplifyFraction(numerator, denominator);
-
-  // 顯示結果
-  const dialogBody = document.querySelector('#dialogBody');
-  dialogBody.innerHTML = `
-    <p><strong>填色區域：</strong>${filledRegionsCount} 個</p>
-    <p><strong>總區域數：</strong>${state.regions.length} 個</p>
-    <p><strong>填色面積：</strong>${Math.round(filledArea)} px²</p>
-    <p><strong>總面積：</strong>${totalArea} px²</p>
-    <p><strong>面積比例：</strong>${(ratio * 100).toFixed(2)}%</p>
-    <p><strong>原始分數：</strong>${numerator}/${denominator}</p>
-    <p><strong>化簡分數：</strong>${simplified.numerator}/${simplified.denominator}</p>
-  `;
-
-  resultDialog.showModal();
-}
-
 // 顯示警告
 function showWarning(message) {
   const warningBody = document.querySelector('#warningBody');
@@ -443,11 +590,243 @@ function reset() {
 
 // 綁定事件
 function bindEvents() {
-  showResultBtn.addEventListener('click', showResult);
+  checkAnswerBtn.addEventListener('click', checkAnswer);
   resetBtn.addEventListener('click', reset);
-  closeDialogBtn.addEventListener('click', () => resultDialog.close());
+  startQuestionBtn.addEventListener('click', () => {
+    questionDialog.close();
+    loadQuestion(gameState.currentQuestion);
+  });
+  nextQuestionBtn.addEventListener('click', () => {
+    correctDialog.close();
+    goToNextQuestion();
+  });
+  showDemoBtn.addEventListener('click', () => {
+    wrongDialog.close();
+    showDemo();
+  });
+  understoodBtn.addEventListener('click', () => {
+    demoDialog.close();
+    // 重試：重新載入同一題
+    gameState.isRetry = true;
+    loadQuestion(gameState.currentQuestion);
+  });
+  restartBtn.addEventListener('click', () => {
+    victoryDialog.close();
+    generateAllQuestions();
+    startGame();
+  });
   closeWarningBtn.addEventListener('click', () => warningDialog.close());
 }
+
+// 檢查答案
+function checkAnswer() {
+  const filledCount = state.filledAreas.size;
+
+  // 檢查是否有填色
+  if (filledCount === 0) {
+    showWarning('還沒有塗顏色喔！請先把正確的區域塗上顏色！');
+    return;
+  }
+
+  // 計算填色面積比例
+  const totalArea = RECT_WIDTH * RECT_HEIGHT;
+  let filledArea = 0;
+
+  state.regions.forEach(region => {
+    if (state.filledAreas.has(region.id)) {
+      filledArea += region.width * region.height;
+    }
+  });
+
+  const filledRatio = filledArea / totalArea;
+  const targetRatio = gameState.targetNumerator / gameState.targetDenominator;
+
+  // 允許一點誤差（處理浮點數問題）
+  const isCorrect = Math.abs(filledRatio - targetRatio) < 0.001;
+
+  if (isCorrect) {
+    handleCorrectAnswer();
+  } else {
+    handleWrongAnswer(filledRatio);
+  }
+}
+
+// 處理答對
+function handleCorrectAnswer() {
+  correctSound.play();
+
+  // 如果不是重試，加分
+  if (!gameState.isRetry) {
+    gameState.score += 10;
+    updateScoreDisplay();
+  }
+
+  const correctBody = document.querySelector('#correctBody');
+  const encouragements = [
+    '你好棒喔！繼續加油！',
+    '太厲害了！你是分數小達人！',
+    '答對了！你真聰明！',
+    '很好很好！再接再厲！',
+    '哇！你做得太棒了！'
+  ];
+  const msg = encouragements[Math.floor(Math.random() * encouragements.length)];
+
+  if (gameState.isRetry) {
+    correctBody.innerHTML = `<p>${msg}</p><p style="color: #888; font-size: 0.9rem;">（重試不加分喔）</p>`;
+  } else {
+    correctBody.innerHTML = `<p>${msg}</p><p style="color: #4CAF50; font-weight: bold;">+10 分！</p>`;
+  }
+
+  // 檢查是否完成所有題目
+  if (gameState.currentQuestion >= gameState.totalQuestions - 1) {
+    nextQuestionBtn.textContent = '看看成績！';
+  } else {
+    nextQuestionBtn.textContent = '下一題';
+  }
+
+  correctDialog.showModal();
+}
+
+// 處理答錯
+function handleWrongAnswer(filledRatio) {
+  wrongSound.play();
+
+  const wrongBody = document.querySelector('#wrongBody');
+  const targetRatio = gameState.targetNumerator / gameState.targetDenominator;
+
+  let hint = '';
+  if (filledRatio > targetRatio) {
+    hint = '塗太多了喔！';
+  } else {
+    hint = '塗得不夠喔！';
+  }
+
+  wrongBody.innerHTML = `
+    <p>${hint}</p>
+    <p>你塗了 ${(filledRatio * 100).toFixed(0)}%，但正確答案是 ${(targetRatio * 100).toFixed(0)}%</p>
+    <p>讓我來告訴你正確答案吧！</p>
+  `;
+
+  wrongDialog.showModal();
+}
+
+// 顯示示範
+function showDemo() {
+  const question = gameState.questions[gameState.currentQuestion];
+  const demoCanvas = document.querySelector('#demoCanvas');
+
+  // 建立示範用的 SVG
+  const demoWidth = 400;
+  const demoHeight = 200;
+
+  // 計算正確的切分方式
+  const hDivisions = question.config.horizontal + 1; // 橫向分割數
+  const vDivisions = question.config.vertical + 1;   // 縱向分割數
+  const totalCells = hDivisions * vDivisions;
+  const cellsToFill = Math.round((question.numerator / question.denominator) * totalCells);
+
+  let svgContent = `
+    <svg width="${demoWidth}" height="${demoHeight}" viewBox="0 0 ${demoWidth} ${demoHeight}">
+      <rect x="0" y="0" width="${demoWidth}" height="${demoHeight}" fill="white" stroke="#4CAF50" stroke-width="2"/>
+  `;
+
+  // 畫垂直線
+  for (let i = 1; i < hDivisions; i++) {
+    const x = (demoWidth / hDivisions) * i;
+    svgContent += `<line x1="${x}" y1="0" x2="${x}" y2="${demoHeight}" stroke="#4CAF50" stroke-width="2"/>`;
+  }
+
+  // 畫水平線
+  for (let i = 1; i < vDivisions; i++) {
+    const y = (demoHeight / vDivisions) * i;
+    svgContent += `<line x1="0" y1="${y}" x2="${demoWidth}" y2="${y}" stroke="#4CAF50" stroke-width="2"/>`;
+  }
+
+  // 填色正確的區域
+  const cellWidth = demoWidth / hDivisions;
+  const cellHeight = demoHeight / vDivisions;
+  let filled = 0;
+
+  for (let row = 0; row < vDivisions && filled < cellsToFill; row++) {
+    for (let col = 0; col < hDivisions && filled < cellsToFill; col++) {
+      const x = col * cellWidth;
+      const y = row * cellHeight;
+      svgContent += `<rect x="${x}" y="${y}" width="${cellWidth}" height="${cellHeight}" fill="rgba(100, 149, 237, 0.4)" stroke="rgba(100, 149, 237, 0.6)" stroke-width="1"/>`;
+      filled++;
+    }
+  }
+
+  svgContent += '</svg>';
+  demoCanvas.innerHTML = svgContent;
+
+  const demoBody = document.querySelector('#demoBody');
+  demoBody.innerHTML = `
+    <p>正確的做法是這樣喔：</p>
+    <p>先把矩形切成 <strong>${totalCells}</strong> 等分</p>
+    <p>然後塗 <strong>${cellsToFill}</strong> 格，就是 <strong>${question.numerator}/${question.denominator}</strong> 囉！</p>
+    ${demoCanvas.outerHTML}
+  `;
+
+  demoDialog.showModal();
+}
+
+// 進入下一題
+function goToNextQuestion() {
+  gameState.currentQuestion++;
+  gameState.isRetry = false;
+
+  if (gameState.currentQuestion >= gameState.totalQuestions) {
+    showVictory();
+  } else {
+    showQuestionDialog();
+  }
+}
+
+// 顯示勝利畫面
+function showVictory() {
+  const victoryBody = document.querySelector('#victoryBody');
+  const victoryCharacter = document.querySelector('#victoryCharacter');
+  const totalScore = gameState.score;
+
+  let message = '';
+  if (totalScore === 100) {
+    // 滿分：播放勝利音效 + 顯示立繪
+    victorySound.play();
+    victoryCharacter.style.display = 'block';
+    message = '滿分！你是分數小天才！🌟';
+  } else {
+    // 非滿分：不播放音效、不顯示立繪
+    victoryCharacter.style.display = 'none';
+    if (totalScore >= 80) {
+      message = '非常棒！你對分數很有概念！';
+    } else if (totalScore >= 60) {
+      message = '不錯喔！再多練習會更厲害！';
+    } else {
+      message = '繼續加油！多練習就會進步！';
+    }
+  }
+
+  victoryBody.innerHTML = `
+    <p style="font-size: 2rem; color: #4CAF50; font-weight: bold;">${totalScore} 分</p>
+    <p>${message}</p>
+  `;
+
+  victoryDialog.showModal();
+}
+
+// 播放音效
+function playSound(sound) {
+  sound.currentTime = 0;
+  sound.play();
+}
+
+// 禁止手機拖曳（防止畫面滑動）
+document.addEventListener('touchmove', function(e) {
+  // 只在非 dialog 時禁止
+  if (!e.target.closest('dialog')) {
+    e.preventDefault();
+  }
+}, { passive: false });
 
 // 啟動應用
 init();

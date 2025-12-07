@@ -17,6 +17,15 @@
   box-sizing: border-box;
 }
 
+/* 禁止手機拖曳和選取 */
+html, body {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: white;
@@ -25,12 +34,38 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
 }
 
 @media (max-width: 650px) {
   body {
     align-items: flex-start;
     padding: 10px;
+  }
+}
+
+/* 計分顯示 */
+.score-display {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #4CAF50;
+  background: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+@media (max-width: 650px) {
+  .score-display {
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+    padding: 8px 16px;
   }
 }
 
@@ -191,6 +226,17 @@ h1 {
   stroke: rgba(100, 149, 237, 0.7);
 }
 
+/* 分數文字 */
+.fraction-text {
+  font-size: 80px;
+  font-weight: bold;
+  fill: rgba(0, 0, 0, 0.15);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+  user-select: none;
+}
+
 /* Dialog 樣式 */
 dialog {
   border: none;
@@ -199,17 +245,86 @@ dialog {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   max-width: 500px;
   width: 90%;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  margin: 0;
   background: white;
+  margin: auto;
 }
 
 dialog::backdrop {
   background-color: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(2px);
+}
+
+/* 帶角色立繪的 dialog */
+dialog.with-character {
+  overflow: visible;
+}
+
+dialog.with-character::backdrop {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* 角色立繪圖片 */
+.character-image {
+  position: fixed;
+  bottom: -80px;
+  left: 20px;
+  width: auto;
+  height: auto;
+  transform: scale(0.5);
+  transform-origin: bottom left;
+  z-index: 10001;
+  pointer-events: none;
+  animation: characterAppear 0.3s ease-out;
+}
+
+@keyframes characterAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.5) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(0.5) translateY(0);
+  }
+}
+
+@media (max-width: 650px) {
+  .character-image {
+    left: 10px;
+    transform: scale(0.4);
+  }
+
+  @keyframes characterAppear {
+    from {
+      opacity: 0;
+      transform: scale(0.4) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(0.4) translateY(0);
+    }
+  }
+}
+
+/* 題目文字樣式 */
+.question-body {
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.question-fraction {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #4CAF50;
+  margin: 20px 0;
+}
+
+/* 示範畫布 */
+.demo-canvas {
+  margin-top: 15px;
+  border: 2px solid #4CAF50;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .dialog-content {
