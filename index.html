@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分數學習教材</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>分數學習教材</h1>
+
+        <div class="canvas-wrapper">
+            <svg id="fractionCanvas" class="fraction-canvas">
+                <!-- 點位容器（最先畫，在最下層） -->
+                <g id="pointsGroup"></g>
+
+                <!-- 矩形（蓋在點位上方） -->
+                <rect id="mainRect" class="main-rect"></rect>
+
+                <!-- 分割線容器 -->
+                <g id="linesGroup"></g>
+
+                <!-- 填色區域容器 -->
+                <g id="fillGroup"></g>
+            </svg>
+        </div>
+
+        <div class="controls">
+            <button id="showResultBtn" class="btn btn-primary">顯示結果</button>
+            <button id="resetBtn" class="btn btn-danger">重置</button>
+        </div>
+    </div>
+
+    <!-- 結果對話框 -->
+    <dialog id="resultDialog" class="result-dialog">
+        <div class="dialog-content">
+            <h2>計算結果</h2>
+            <div id="dialogBody" class="dialog-body"></div>
+            <div class="dialog-actions">
+                <button id="closeDialogBtn" class="btn btn-primary">關閉</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- 警告對話框 -->
+    <dialog id="warningDialog" class="result-dialog">
+        <div class="dialog-content">
+            <h2>提醒</h2>
+            <div id="warningBody" class="dialog-body"></div>
+            <div class="dialog-actions">
+                <button id="closeWarningBtn" class="btn btn-warning">確定</button>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="app.js"></script>
+</body>
+</html>
