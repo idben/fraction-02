@@ -80,8 +80,10 @@ function calculateRectHeight(config) {
   // 基礎高度 400，根據縱向分割調整
   let height = 400;
 
-  // 如果縱向有分割，確保高度可被整除
-  if (verticalDivisions > 1) {
+  // 分母 10 且是縱切時，高度和寬度一樣（800）
+  if (verticalDivisions === 10) {
+    height = 800;
+  } else if (verticalDivisions > 1) {
     // 找一個接近 400 且可被 verticalDivisions 整除的數
     height = Math.round(400 / verticalDivisions) * verticalDivisions;
   }
