@@ -808,6 +808,13 @@ function goToNextQuestion() {
   gameState.currentQuestion++;
   gameState.isRetry = false;
 
+  // 切換回畫線模式
+  currentMode = 'draw';
+  modeRadios.forEach(radio => {
+    radio.checked = radio.value === 'draw';
+  });
+  updateModeClass();
+
   if (gameState.currentQuestion >= gameState.totalQuestions) {
     showVictory();
   } else {
